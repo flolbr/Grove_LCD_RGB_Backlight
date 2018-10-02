@@ -33,11 +33,11 @@
 #define __RGB_LCD_H__
 
 #include <inttypes.h>
-#include "Print.h"
+#include <mbed.h>
 
 // Device I2C Arress
-#define LCD_ADDRESS     (0x7c>>1)
-#define RGB_ADDRESS     (0xc4>>1)
+#define LCD_ADDRESS     (0x7c)
+#define RGB_ADDRESS     (0xc4)
 
 
 // color define 
@@ -92,11 +92,11 @@
 #define LCD_5x10DOTS 0x04
 #define LCD_5x8DOTS 0x00
 
-class rgb_lcd : public Print 
+class rgb_lcd // : public Print 
 {
 
 public:
-  rgb_lcd();
+  rgb_lcd(PinName sda, PinName scl);
 
   void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
 
@@ -134,11 +134,14 @@ public:
   void blinkLED(void);
   void noBlinkLED(void);
   
-  using Print::write;
+  // using Print::write;
+
+  // Print
+  void print(char *str);
   
 private:
   void send(uint8_t, uint8_t);
-  void setReg(unsigned char addr, unsigned char dta);
+  void setReg(char addr, char val);
 
   uint8_t _displayfunction;
   uint8_t _displaycontrol;
@@ -147,6 +150,8 @@ private:
   uint8_t _initialized;
 
   uint8_t _numlines,_currline;
+
+  I2C i2c;
 };
 
 #endif

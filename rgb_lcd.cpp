@@ -28,39 +28,45 @@
   THE SOFTWARE.1  USA
 */
 
-#include <Arduino.h>
 #include <stdio.h>
 #include <string.h>
 #include <inttypes.h>
-#include <Wire.h>
+
+#include <mbed.h>
 
 #include "rgb_lcd.h"
 
-void i2c_send_byte(unsigned char dta)
+rgb_lcd::rgb_lcd(PinName sda, PinName scl) : i2c(sda, scl)
 {
-    Wire.beginTransmission(LCD_ADDRESS);        // transmit to device #4
-    Wire.write(dta);                            // sends five bytes
-    Wire.endTransmission();                     // stop transmitting
-}
-
-void i2c_send_byteS(unsigned char *dta, unsigned char len)
-{
-    Wire.beginTransmission(LCD_ADDRESS);        // transmit to device #4
-    for(int i=0; i<len; i++)
-    {
-        Wire.write(dta[i]);
-    }
-    Wire.endTransmission();                     // stop transmitting
-}
-
-rgb_lcd::rgb_lcd()
-{
+   //Initialize displayfunction parameter for setting up LCD display
+   _displayfunction |= LCD_2LINE;
+   _displayfunction |= LCD_5x10DOTS;
+ 
+   //Wait for more than 30 ms after power rises above 4.5V per the data sheet
+    wait_ms(50);
+ 
+ 
+    // Send first function set command. Wait longer that 39 us per the data sheet
+    command(LCD_FUNCTIONSET | _displayfunction);
+    wait_us(45);  
+    
+    // turn the display on
+    display();
+ 
+    // clear the display
+    clear();
+    
+    // Initialize backlight
+    setReg(0, 0);
+    setReg(1, 0);
+    setReg(0x08, 0xAA);   
+    
 }
 
 void rgb_lcd::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) 
 {
 
-    Wire.begin();
+    // Wire.begin();
     
     if (lines > 1) {
         _displayfunction |= LCD_2LINE;
@@ -76,7 +82,7 @@ void rgb_lcd::begin(uint8_t cols, uint8_t lines, uint8_t dotsize)
     // SEE PAGE 45/46 FOR INITIALIZATION SPECIFICATION!
     // according to datasheet, we need at least 40ms after power rises above 2.7V
     // before sending commands. Arduino can turn on way befer 4.5V so we'll wait 50
-    delayMicroseconds(50000);
+    wait_us(50000);
 
 
     // this is according to the hitachi HD44780 datasheet
@@ -84,11 +90,11 @@ void rgb_lcd::begin(uint8_t cols, uint8_t lines, uint8_t dotsize)
 
     // Send function set command sequence
     command(LCD_FUNCTIONSET | _displayfunction);
-    delayMicroseconds(4500);  // wait more than 4.1ms
+    wait_us(4500);  // wait more than 4.1ms
 
     // second try
     command(LCD_FUNCTIONSET | _displayfunction);
-    delayMicroseconds(150);
+    wait_us(150);
 
     // third go
     command(LCD_FUNCTIONSET | _displayfunction);
@@ -122,26 +128,40 @@ void rgb_lcd::begin(uint8_t cols, uint8_t lines, uint8_t dotsize)
 
 }
 
+void rgb_lcd::print(char *str)
+{   
+    char data[2];
+    data[0] = 0x40;
+    while(*str)
+    {
+            data[1] = *str;
+            i2c.write(LCD_ADDRESS, data, 2);
+            str++;
+            
+    }
+
+}
+
 /********** high level commands, for the user! */
 void rgb_lcd::clear()
 {
     command(LCD_CLEARDISPLAY);        // clear display, set cursor position to zero
-    delayMicroseconds(2000);          // this command takes a long time!
+    wait_us(2000);          // this command takes a long time!
 }
 
 void rgb_lcd::home()
 {
     command(LCD_RETURNHOME);        // set cursor position to zero
-    delayMicroseconds(2000);        // this command takes a long time!
+    wait_us(2000);        // this command takes a long time!
 }
 
 void rgb_lcd::setCursor(uint8_t col, uint8_t row)
 {
 
     col = (row == 0 ? col|0x80 : col|0xc0);
-    unsigned char dta[2] = {0x80, col};
+    char dta[2] = {0x80, col};
 
-    i2c_send_byteS(dta, 2);
+    i2c.write(LCD_ADDRESS, dta, 2);
 
 }
 
@@ -228,13 +248,13 @@ void rgb_lcd::createChar(uint8_t location, uint8_t charmap[])
     command(LCD_SETCGRAMADDR | (location << 3));
     
     
-    unsigned char dta[9];
+    char dta[9];
     dta[0] = 0x40;
     for(int i=0; i<8; i++)
     {
         dta[i+1] = charmap[i];
     }
-    i2c_send_byteS(dta, 9);
+    i2c.write(LCD_ADDRESS, dta, 9);
 }
 
 // Control the backlight LED blinking
@@ -257,25 +277,25 @@ void rgb_lcd::noBlinkLED(void)
 // send command
 inline void rgb_lcd::command(uint8_t value)
 {
-    unsigned char dta[2] = {0x80, value};
-    i2c_send_byteS(dta, 2);
+    char dta[2] = {0x80, value};
+    i2c.write(LCD_ADDRESS, dta, 2);
 }
 
 // send data
 inline size_t rgb_lcd::write(uint8_t value)
 {
 
-    unsigned char dta[2] = {0x40, value};
-    i2c_send_byteS(dta, 2);
+    char dta[2] = {0x40, value};
+    i2c.write(LCD_ADDRESS, dta, 2);
     return 1; // assume sucess
 }
 
-void rgb_lcd::setReg(unsigned char addr, unsigned char dta)
+void rgb_lcd::setReg(char addr, char val)
 {
-    Wire.beginTransmission(RGB_ADDRESS); // transmit to device #4
-    Wire.write(addr);
-    Wire.write(dta);
-    Wire.endTransmission();    // stop transmitting
+    char data[2];
+    data[0] = addr;
+    data[1] = val;
+    i2c.write(RGB_ADDRESS, data, 2);
 }
 
 void rgb_lcd::setRGB(unsigned char r, unsigned char g, unsigned char b)
