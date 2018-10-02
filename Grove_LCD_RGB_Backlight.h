@@ -1,5 +1,5 @@
 /*
-  rgb_lcd.h
+  Grove_LCD_RGB_Backlight.h
   2013 Copyright (c) Seeed Technology Inc.  All right reserved.
 
   Author:Loovee
@@ -29,8 +29,8 @@
 */
 
 
-#ifndef __RGB_LCD_H__
-#define __RGB_LCD_H__
+#ifndef __Grove_LCD_RGB_Backlight_H__
+#define __Grove_LCD_RGB_Backlight_H__
 
 #include <inttypes.h>
 #include <mbed.h>
@@ -92,11 +92,11 @@
 #define LCD_5x10DOTS 0x04
 #define LCD_5x8DOTS 0x00
 
-class rgb_lcd // : public Print 
+class Grove_LCD_RGB_Backlight // : public Print 
 {
 
 public:
-  rgb_lcd(PinName sda, PinName scl);
+  Grove_LCD_RGB_Backlight(PinName sda, PinName scl);
 
   void begin(uint8_t cols, uint8_t rows, uint8_t charsize = LCD_5x8DOTS);
 

@@ -1,5 +1,5 @@
 /*
-  rgb_lcd.cpp
+  Grove_LCD_RGB_Backlight.cpp
   2013 Copyright (c) Seeed Technology Inc.  All right reserved.
 
   Author:Loovee
@@ -34,9 +34,9 @@
 
 #include <mbed.h>
 
-#include "rgb_lcd.h"
+#include "Grove_LCD_RGB_Backlight.h"
 
-rgb_lcd::rgb_lcd(PinName sda, PinName scl) : i2c(sda, scl)
+Grove_LCD_RGB_Backlight::Grove_LCD_RGB_Backlight(PinName sda, PinName scl) : i2c(sda, scl)
 {
    //Initialize displayfunction parameter for setting up LCD display
    _displayfunction |= LCD_2LINE;
@@ -63,7 +63,7 @@ rgb_lcd::rgb_lcd(PinName sda, PinName scl) : i2c(sda, scl)
     
 }
 
-void rgb_lcd::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) 
+void Grove_LCD_RGB_Backlight::begin(uint8_t cols, uint8_t lines, uint8_t dotsize) 
 {
 
     // Wire.begin();
@@ -128,7 +128,7 @@ void rgb_lcd::begin(uint8_t cols, uint8_t lines, uint8_t dotsize)
 
 }
 
-void rgb_lcd::print(char *str)
+void Grove_LCD_RGB_Backlight::print(char *str)
 {   
     char data[2];
     data[0] = 0x40;
@@ -143,19 +143,19 @@ void rgb_lcd::print(char *str)
 }
 
 /********** high level commands, for the user! */
-void rgb_lcd::clear()
+void Grove_LCD_RGB_Backlight::clear()
 {
     command(LCD_CLEARDISPLAY);        // clear display, set cursor position to zero
     wait_us(2000);          // this command takes a long time!
 }
 
-void rgb_lcd::home()
+void Grove_LCD_RGB_Backlight::home()
 {
     command(LCD_RETURNHOME);        // set cursor position to zero
     wait_us(2000);        // this command takes a long time!
 }
 
-void rgb_lcd::setCursor(uint8_t col, uint8_t row)
+void Grove_LCD_RGB_Backlight::setCursor(uint8_t col, uint8_t row)
 {
 
     col = (row == 0 ? col|0x80 : col|0xc0);
@@ -166,74 +166,74 @@ void rgb_lcd::setCursor(uint8_t col, uint8_t row)
 }
 
 // Turn the display on/off (quickly)
-void rgb_lcd::noDisplay()
+void Grove_LCD_RGB_Backlight::noDisplay()
 {
     _displaycontrol &= ~LCD_DISPLAYON;
     command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
-void rgb_lcd::display() {
+void Grove_LCD_RGB_Backlight::display() {
     _displaycontrol |= LCD_DISPLAYON;
     command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // Turns the underline cursor on/off
-void rgb_lcd::noCursor()
+void Grove_LCD_RGB_Backlight::noCursor()
 {
     _displaycontrol &= ~LCD_CURSORON;
     command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
-void rgb_lcd::cursor() {
+void Grove_LCD_RGB_Backlight::cursor() {
     _displaycontrol |= LCD_CURSORON;
     command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // Turn on and off the blinking cursor
-void rgb_lcd::noBlink()
+void Grove_LCD_RGB_Backlight::noBlink()
 {
     _displaycontrol &= ~LCD_BLINKON;
     command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
-void rgb_lcd::blink()
+void Grove_LCD_RGB_Backlight::blink()
 {
     _displaycontrol |= LCD_BLINKON;
     command(LCD_DISPLAYCONTROL | _displaycontrol);
 }
 
 // These commands scroll the display without changing the RAM
-void rgb_lcd::scrollDisplayLeft(void)
+void Grove_LCD_RGB_Backlight::scrollDisplayLeft(void)
 {
     command(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVELEFT);
 }
-void rgb_lcd::scrollDisplayRight(void)
+void Grove_LCD_RGB_Backlight::scrollDisplayRight(void)
 {
     command(LCD_CURSORSHIFT | LCD_DISPLAYMOVE | LCD_MOVERIGHT);
 }
 
 // This is for text that flows Left to Right
-void rgb_lcd::leftToRight(void)
+void Grove_LCD_RGB_Backlight::leftToRight(void)
 {
     _displaymode |= LCD_ENTRYLEFT;
     command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This is for text that flows Right to Left
-void rgb_lcd::rightToLeft(void)
+void Grove_LCD_RGB_Backlight::rightToLeft(void)
 {
     _displaymode &= ~LCD_ENTRYLEFT;
     command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This will 'right justify' text from the cursor
-void rgb_lcd::autoscroll(void)
+void Grove_LCD_RGB_Backlight::autoscroll(void)
 {
     _displaymode |= LCD_ENTRYSHIFTINCREMENT;
     command(LCD_ENTRYMODESET | _displaymode);
 }
 
 // This will 'left justify' text from the cursor
-void rgb_lcd::noAutoscroll(void)
+void Grove_LCD_RGB_Backlight::noAutoscroll(void)
 {
     _displaymode &= ~LCD_ENTRYSHIFTINCREMENT;
     command(LCD_ENTRYMODESET | _displaymode);
@@ -241,7 +241,7 @@ void rgb_lcd::noAutoscroll(void)
 
 // Allows us to fill the first 8 CGRAM locations
 // with custom characters
-void rgb_lcd::createChar(uint8_t location, uint8_t charmap[])
+void Grove_LCD_RGB_Backlight::createChar(uint8_t location, uint8_t charmap[])
 {
 
     location &= 0x7; // we only have 8 locations 0-7
@@ -258,7 +258,7 @@ void rgb_lcd::createChar(uint8_t location, uint8_t charmap[])
 }
 
 // Control the backlight LED blinking
-void rgb_lcd::blinkLED(void)
+void Grove_LCD_RGB_Backlight::blinkLED(void)
 {
     // blink period in seconds = (<reg 7> + 1) / 24
     // on/off ratio = <reg 6> / 256
@@ -266,7 +266,7 @@ void rgb_lcd::blinkLED(void)
     setReg(0x06, 0x7f);  // half on, half off
 }
 
-void rgb_lcd::noBlinkLED(void)
+void Grove_LCD_RGB_Backlight::noBlinkLED(void)
 {
     setReg(0x07, 0x00);
     setReg(0x06, 0xff);
@@ -275,14 +275,14 @@ void rgb_lcd::noBlinkLED(void)
 /*********** mid level commands, for sending data/cmds */
 
 // send command
-inline void rgb_lcd::command(uint8_t value)
+inline void Grove_LCD_RGB_Backlight::command(uint8_t value)
 {
     char dta[2] = {0x80, value};
     i2c.write(LCD_ADDRESS, dta, 2);
 }
 
 // send data
-inline size_t rgb_lcd::write(uint8_t value)
+inline size_t Grove_LCD_RGB_Backlight::write(uint8_t value)
 {
 
     char dta[2] = {0x40, value};
@@ -290,7 +290,7 @@ inline size_t rgb_lcd::write(uint8_t value)
     return 1; // assume sucess
 }
 
-void rgb_lcd::setReg(char addr, char val)
+void Grove_LCD_RGB_Backlight::setReg(char addr, char val)
 {
     char data[2];
     data[0] = addr;
@@ -298,7 +298,7 @@ void rgb_lcd::setReg(char addr, char val)
     i2c.write(RGB_ADDRESS, data, 2);
 }
 
-void rgb_lcd::setRGB(unsigned char r, unsigned char g, unsigned char b)
+void Grove_LCD_RGB_Backlight::setRGB(unsigned char r, unsigned char g, unsigned char b)
 {
     setReg(REG_RED, r);
     setReg(REG_GREEN, g);
@@ -313,7 +313,7 @@ const unsigned char color_define[4][3] =
     {0, 0, 255},                // blue
 };
 
-void rgb_lcd::setColor(unsigned char color)
+void Grove_LCD_RGB_Backlight::setColor(unsigned char color)
 {
     if(color > 3)return ;
     setRGB(color_define[color][0], color_define[color][1], color_define[color][2]);
